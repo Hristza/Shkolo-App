@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace ShkoloApp
+{
+    public partial class IndexForm : Form
+    {
+        private List<Student> students = new List<Student>();
+
+        public IndexForm()
+        {
+            InitializeComponent();
+        }
+
+        private void IndexForm_Load(object sender, EventArgs e)
+        {
+            LoadAllStudents();
+        }
+
+        private void LoadAllStudents()
+        {
+            listViewStudents.Items.Clear();
+            foreach (var student in students)
+            {
+                var item = new ListViewItem(student.Name);
+                item.SubItems.Add(student.MathematicsMarks.Count > 0
+                    ? student.MathematicsMarks.Average().ToString("F2")
+                    : "N/A");
+                item.SubItems.Add(student.InformaticsMarks.Count > 0
+                    ? student.InformaticsMarks.Average().ToString("F2")
+                    : "N/A");
+                item.SubItems.Add(student.SportMarks.Count > 0
+                    ? student.SportMarks.Average().ToString("F2")
+                    : "N/A");
+                listViewStudents.Items.Add(item);
+            }
+        }
+
+        private void btnAddNewStudent_Click(object sender, EventArgs e)
+        {
+            using (var addForm = new AddNewStudentForm())
+            {
+                if (addForm.ShowDialog() == DialogResult.OK)
+                {
+                    students.Add(new Student(addForm.StudentName, addForm.StudentGrade));
+                    LoadAllStudents();
+                }
+            }
+        }
+
+        private void listViewStudents_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (listViewStudents.SelectedItems.Count == 0) return;
+
+            var selectedName = listViewStudents.SelectedItems[0].Text;
+            var selectedStudent = students.FirstOrDefault(s => s.Name == selectedName);
+
+            if (selectedStudent != null)
+            {
+                using (var detailsForm = new StudentDetailsForm(selectedStudent))
+                {
+                    detailsForm.ShowDialog();
+                    LoadAllStudents();
+                }
+            }
+        }
+    }
+}
