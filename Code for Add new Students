@@ -1,0 +1,55 @@
+using System;
+using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace ShkoloApp
+{
+    public partial class AddNewStudentForm : Form
+    {
+        public string StudentName { get; private set; }
+        public int StudentGrade { get; private set; }
+
+        public AddNewStudentForm()
+        {
+            InitializeComponent();
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            if (CheckIfInputsAreValid())
+            {
+                StudentName = textBoxName.Text.Trim();
+                StudentGrade = int.Parse(textBoxGrade.Text.Trim());
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+        }
+
+        private bool CheckIfInputsAreValid()
+        {
+            return CheckIfNameIsNotEmpty() && CheckIfGradeIsValid();
+        }
+
+        private bool CheckIfNameIsNotEmpty()
+        {
+            if (string.IsNullOrWhiteSpace(textBoxName.Text))
+            {
+                errorProvider.SetError(textBoxName, "Name cannot be empty!");
+                return false;
+            }
+            errorProvider.SetError(textBoxName, "");
+            return true;
+        }
+
+        private bool CheckIfGradeIsValid()
+        {
+            if (!int.TryParse(textBoxGrade.Text, out var grade) || grade < 1 || grade > 12)
+            {
+                errorProvider.SetError(textBoxGrade, "Grade must be a number between 1 and 12!");
+                return false;
+            }
+            errorProvider.SetError(textBoxGrade, "");
+            return true;
+        }
+    }
+}
