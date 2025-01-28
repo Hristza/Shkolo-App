@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ShkoloApp
+{
+    static class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new IndexForm());
+        }
+    }
+
+    public class Student
+    {
+        public string Name { get; set; }
+        public int Grade { get; set; }
+        public int ExcusedAbsences { get; set; }
+        public int UnexcusedAbsences { get; set; }
+        public List<double> MathGrades { get; set; } = new List<double>();
+        public List<double> InformaticsGrades { get; set; } = new List<double>();
+        public List<double> SportsGrades { get; set; } = new List<double>();
+
+        public int TotalAbsences => ExcusedAbsences + UnexcusedAbsences;
+
+        public Student(string name, int grade)
+        {
+            Name = name;
+            Grade = grade;
+        }
+
+        public Student(string name, int grade, int excusedAbsences, int unexcusedAbsences,
+                        List<double> mathGrades, List<double> informaticsGrades, List<double> sportsGrades)
+        {
+            Name = name;
+            Grade = grade;
+            ExcusedAbsences = excusedAbsences;
+            UnexcusedAbsences = unexcusedAbsences;
+            MathGrades = mathGrades;
+            InformaticsGrades = informaticsGrades;
+            SportsGrades = sportsGrades;
+        }
+
+        public double GetAverageGrade()
+        {
+            var allGrades = MathGrades.Concat(InformaticsGrades).Concat(SportsGrades).ToList();
+            return allGrades.Count > 0 ? allGrades.Average() : 0;
+        }
+    }
+}
