@@ -1,0 +1,147 @@
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+namespace ShkoloApp
+{
+    public partial class StudentDetailsForm : Form
+    {
+        private Student currentStudent;
+
+        public StudentDetailsForm(Student student)
+        {
+            InitializeComponent();
+            currentStudent = student;
+        }
+
+        private void StudentDetailsForm_Load(object sender, EventArgs e)
+        {
+            FillStudentInfoLabels();
+            UpdateListViewWithMarks();
+            CheckForWarnings();
+        }
+
+        private void FillStudentInfoLabels()
+        {
+            lblName.Text = $"Name: {currentStudent.Name}";
+            lblGrade.Text = $"Grade: {currentStudent.Grade}";
+            lblAverageMark.Text = $"Average Mark: {currentStudent.CalculateAverageMark():F2}";
+            lblExcusedAbsences.Text = $"Excused Absences: {currentStudent.ExcusedAbsences}";
+            lblUnexcusedAbsences.Text = $"Unexcused Absences: {currentStudent.UnexcusedAbsences}";
+            lblTotalAbsences.Text = $"Total Absences: {currentStudent.TotalAbsences}";
+        }
+
+        private void UpdateListViewWithMarks()
+        {
+            listViewMarks.Items.Clear();
+            AddMarksToListView("Mathematics", currentStudent.MathematicsMarks);
+            AddMarksToListView("Informatics", currentStudent.InformaticsMarks);
+            AddMarksToListView("Sport", currentStudent.SportMarks);
+        }
+
+        private void AddMarksToListView(string subject, List<double> marks)
+        {
+            var item = new ListViewItem(subject);
+            item.SubItems.Add(string.Join(", ", marks));
+            listViewMarks.Items.Add(item);
+        }
+
+        private void CheckForWarnings()
+        {
+            if (currentStudent.UnexcusedAbsences > 10)
+            {
+                ChangeColor();
+            }
+        }
+
+        private void ChangeColor()
+        {
+            this.BackColor = System.Drawing.Color.Pink;
+            lblWarning.Text = "Too many unexcused absences!";
+            lblWarning.Visible = true;
+        }
+
+        private void btnAddMark_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                AddNewMark();
+                UpdateListViewWithMarks();
+                FillStudentInfoLabels();
+                ClearInputs();
+            }
+            catch (Exception ex)
+            {
+                ShowErrorMessage(lblError, ex.Message);
+            }
+        }
+
+        private void AddNewMark()
+        {
+            if (!double.TryParse(textBoxMark.Text, out var mark) || mark < 2 || mark > 6)
+                throw new Exception("Mark must be a number between 2 and 6!");
+
+            if (listBoxSubjects.SelectedItem == null)
+                throw new Exception("Please select a subject!");
+
+            var subject = listBoxSubjects.SelectedItem.ToString();
+            if (subject == "Mathematics")
+                currentStudent.MathematicsMarks.Add(mark);
+            else if (subject == "Informatics")
+                currentStudent.InformaticsMarks.Add(mark);
+            else if (subject == "Sport")
+                currentStudent.SportMarks.Add(mark);
+        }
+
+        private void btnAddAbsence_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                AddAbsence();
+                FillStudentInfoLabels();
+                ClearInputs();
+                CheckForWarnings();
+            }
+            catch (Exception ex)
+            {
+                ShowErrorMessage(lblError, ex.Message);
+            }
+        }
+
+        private void AddAbsence()
+        {
+            if (listBoxAbsenceType.SelectedItem == null)
+                throw new Exception("Please select an absence type!");
+
+            if (!int.TryParse(numericUpDownAbsences.Value.ToString(), out var count) || count < 1)
+                throw new Exception("Number of absences must be at least 1!");
+
+            var type = listBoxAbsenceType.SelectedItem.ToString();
+            if (type == "Excused")
+                currentStudent.ExcusedAbsences += count;
+            else if (type == "Unexcused")
+                currentStudent.UnexcusedAbsences += count;
+        }
+
+        private void ShowErrorMessage(Label label, string message)
+        {
+            label.Text = message;
+            label.Visible = true;
+            var timer = new Timer { Interval = 3000 };
+            timer.Tick += (s, e) =>
+            {
+                label.Visible = false;
+                timer.Stop();
+            };
+            timer.Start();
+        }
+
+        private void ClearInputs()
+        {
+            textBoxMark.Clear();
+            listBoxSubjects.ClearSelected();
+            listBoxAbsenceType.ClearSelected();
+            numericUpDownAbsences.Value = 0;
+        }
+    }
+}
